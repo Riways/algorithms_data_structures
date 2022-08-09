@@ -1,5 +1,6 @@
 package data_structures.trees;
 
+import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
@@ -31,6 +32,14 @@ class BlackRedTreeTest {
 	private ArrayList<Integer> initArrayWithTwentyElementsInRandomArrange() {
 		ArrayList<Integer> arrList = new ArrayList<>();
 		for (int i = 0; i < 20; i++) {
+			arrList.add(i);
+		}
+		Collections.shuffle(arrList);
+		return arrList;
+	}
+	private ArrayList<Integer> initArrayWithThousandElementsInRandomArrange() {
+		ArrayList<Integer> arrList = new ArrayList<>();
+		for (int i = 0; i < 1000; i++) {
 			arrList.add(i);
 		}
 		Collections.shuffle(arrList);
@@ -88,18 +97,26 @@ class BlackRedTreeTest {
 
 	@Test
 	void testInsertAndDelete() {
-		initTreeWithTwentyElements();
-		ArrayList<Integer> arr = initArrayWithTwentyElementsInRandomArrange();
-		for (int i = 0; i < 20; i++) {
-			System.out.println("DELETING: " + arr.get(i));
-			System.out.println("BEFORE MANIPULATION: ");
-			tree.printTree();
-			
-			tree.delete(arr.get(i));
-			System.out.println("RESULT: " + tree.isTreeValid());
-			tree.printTree();
+		for(int j = 0; j<100; j++) {
+			initTreeWithThousandElements();
+			ArrayList<Integer> arr = initArrayWithThousandElementsInRandomArrange();
+			for (int i = 0; i < 1000; i++) {
+				System.out.println("DELETING: " + arr.get(i));
+//			System.out.println("BEFORE MANIPULATION: ");
+//			tree.printTree();
+				tree.delete(arr.get(i));
+				boolean isTreeValid = tree.isTreeValid();
+				System.out.println("RESULT: " + (isTreeValid ? "GOOD" : "BAD"));
+//			tree.printTree();
+				if (!isTreeValid) {
+					fail();
+					break;
+				}
+
+			}
+			assertEquals(tree.size(), 0);
 		}
-		assertEquals(tree.size(), 0);
+		
 	}
 
 	@Test

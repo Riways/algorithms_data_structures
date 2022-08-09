@@ -1,7 +1,5 @@
 package data_structures.trees;
 
-import java.util.Iterator;
-
 public class BinarySearchTree<T extends Comparable<T>> {
 	private Node root;
 

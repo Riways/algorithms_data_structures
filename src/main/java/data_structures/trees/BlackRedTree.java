@@ -3,19 +3,16 @@ package data_structures.trees;
 public class BlackRedTree<T extends Comparable<T>> {
 
 	private static final String ANSI_RED = "\u001B[31m";
-	private static final String ANSI_GREEN = "\u001B[32m";
 	private static final String ANSI_RESET = "\u001B[0m";
 	private static final String ANSI_YELLOW = "\u001B[33m";
 
 	private Node root;
-	private Node nil;
 
 	private int size;
 
 	public BlackRedTree() {
 		size = 0;
-		nil = new Node();
-		root = nil;
+		root = null;
 	}
 
 	public int maxDepth() {
@@ -30,13 +27,11 @@ public class BlackRedTree<T extends Comparable<T>> {
 	public Node search(T value) {
 		return searchFoo(value, root);
 	}
-	private boolean isNil(Node node) {
-		return node == nil;
-	}
+
 
 	private Node searchFoo(T value, Node node) {
-		if (node == nil)
-			return nil;
+		if (node == null)
+			return null;
 		if (node.key.equals(value))
 			return node;
 		if (node.key.compareTo(value) < 0)
@@ -59,326 +54,351 @@ public class BlackRedTree<T extends Comparable<T>> {
 	}
 
 	public void inorderTreeWalk(Node node) {
-		if (node == nil)
+		if (node == null)
 			return;
 		inorderTreeWalk(node.left);
 		inorderTreeWalk(node.right);
 	}
 
 	private Node treeMinimum(Node node) {
-		while (node.left != nil)
+		while (node.left != null)
 			node = node.left;
 		return node;
 	}
 
 	private Node treeMaximum(Node node) {
-		while (node.right != nil)
+		while (node.right != null)
 			node = node.right;
 		return node;
 	}
 
-	public void delete(T key) {
-		Node nodeToDelete = search(key);
-		if (nodeToDelete == nil)
-			return;
-		boolean isNodeWasRed = nodeToDelete.isRed;
-		Node x = nil;
-		// right child only or no children
-		if (nodeToDelete.left == nil) {
-			x = nodeToDelete.right;
-			replaceNode(nodeToDelete, nodeToDelete.right);
-			size--;
-		} else
-		// left child only
-		if (nodeToDelete.right == nil) {
-			x = nodeToDelete.left;
-			replaceNode(nodeToDelete, nodeToDelete.left);
-			size--;
-		} else
-		// left and right children
-		{
-			Node successor = treeMinimum(nodeToDelete.right);
-			isNodeWasRed = successor.isRed;
-			x = successor.right;
-			if (x == nil) {
-//				x =
-			}
-			if (successor.parent != nodeToDelete) {
-				replaceNode(successor, successor.right);
-				successor.right = nodeToDelete.right;
-				successor.right.parent = successor;
-			}
-			replaceNode(nodeToDelete, successor);
-			successor.left = nodeToDelete.left;
-			nodeToDelete.left.parent = successor;
-			successor.isRed = nodeToDelete.isRed;
-			printTree();
-			size--;
-		}
-		if (!isNodeWasRed) {
-			repaintTreeAterDelete(x);
-		}
-	}
-
-	public String isTreeValid() {
+	public boolean isTreeValid() {
 		int depth = treeValidationHelper(root, 0);
-		if (depth < 0)
-			return ANSI_RED + "BAD" + ANSI_RESET;
+		if (depth < 0 || (root != null && root.isRed))
+			return false;
 		else
-			return ANSI_GREEN + "GOOD" + ANSI_RESET;
+			return true;
 	}
 
 	private int treeValidationHelper(Node node, int blackDepth) {
-		if (node == nil) {
-			return blackDepth;
+		if (node == null) {
+			return ++blackDepth;
 		}
 		if (!node.isRed) {
 			blackDepth++;
 		}
 		if (isNodeHasTwoChilds(node)) {
+			if (node.isRed && (node.right.isRed || node.left.isRed)) {
+				// System.out.println("BAD NODE: " + node.key + " DEPTH: " + blackDepth);
+				return -1;
+			}
 			int checkLeftDepth = treeValidationHelper(node.left, blackDepth);
 			int checkRightDepth = treeValidationHelper(node.right, blackDepth);
 			if (checkLeftDepth < 0 | checkRightDepth < 0 | checkRightDepth != checkLeftDepth) {
-				System.out.println("BAD NODE: " + node.key + " DEPTH: " + blackDepth);
+				// System.out.println("BAD NODE: " + node.key + " DEPTH: " + blackDepth);
 				return -1;
 			} else
 				return checkLeftDepth;
-		} else if (node.left != nil) {
+		} else if (node.left != null) {
+			if (node.isRed && node.left.isRed) {
+				// System.out.println("BAD NODE: " + node.key + " DEPTH: " + blackDepth);
+				return -1;
+			}
+			int prevDepth = blackDepth;
 			blackDepth = treeValidationHelper(node.left, blackDepth);
-		} else if (node.right != nil) {
+			if (blackDepth != prevDepth + 1) {
+				// System.out.println("BAD NODE: " + node.key + " DEPTH: " + blackDepth);
+				return -1;
+			}
+		} else if (node.right != null) {
+			if (node.isRed && node.right.isRed) {
+				// System.out.println("BAD NODE: " + node.key + " DEPTH: " + blackDepth);
+				return -1;
+			}
+			int prevDepth = blackDepth;
 			blackDepth = treeValidationHelper(node.right, blackDepth);
+			if (blackDepth != prevDepth + 1) {
+				// System.out.println("BAD NODE: " + node.key + " DEPTH: " + blackDepth);
+				return -1;
+			}
+		} else {
+			return ++blackDepth;
 		}
 		return blackDepth;
 	}
 
 	private boolean isNodeHasTwoChilds(Node node) {
-		return node.left != nil && node.right != nil;
+		return node.left != null && node.right != null;
 	}
 
-//	private void prepareNil(Node node) {
-//		nil.parent = node.parent;
-//		nil.isRed = node.isRed;
-//		if (node.parent != nil) {
-//			if (node.parent.right == node)
-//				node.parent.right = nil;
-//			else
-//				node.parent.left = nil;
-//		}
-//	}
-//
-//	private void resetNil() {
-//		nil.right = nil;
-//		nil.left = nil;
-//		nil.isRed = false;
-//		if (nil.parent != nil) {
-//			if (nil.parent.right == nil)
-//				nil.parent.right = nil;
-//			else
-//				nil.parent.left = nil;
-//		}
-//		nil.parent = nil;
-//	}
+	private boolean isNodeHasTwoBlackChildren(Node node) {
+		if (isNodeHasTwoChilds(node)) {
+			return !node.left.isRed && !node.right.isRed;
+		} else {
+			return node.left == null && node.right == null;
+		}
+	}
 
-	private void repaintTreeAterDelete(Node node) {
-		if (node == nil) {
-			System.out.println("PAINTING TREE: nil NODE");
+	private boolean nodeHaveNoChildren(Node node) {
+		return node.left == null && node.right == null;
+	}
+
+	/*
+	 * When we delete node we can encounter with three cases: 1. Node have no
+	 * children 1.1 If node is red we simply replace it with null 1.2 If node is
+	 * black we have to repaint tree because the depth of tree changed(most
+	 * complicated case) 2. Node have one child In this case Node always will be
+	 * black with red child, and according to black-depth rule red child can't have
+	 * children. We have to copy value from red node into black and replace red node
+	 * with null; 3. Node have two children Goal of this case is to convert current
+	 * layout to one of two previous case's
+	 */
+	public void delete(T key) {
+		Node nodeToDelete = search(key);
+		if (nodeToDelete == null)
+			return;
+		boolean isNodeWasRed = false;
+		Node x = null;
+		boolean isSimpleCase = false;
+
+		while (!isSimpleCase) {
+			isNodeWasRed = nodeToDelete.isRed;
+			// no children
+			// first or second case
+			if (nodeToDelete.left == null && nodeToDelete.right == null) {
+				x = nodeToDelete;
+				if (!isNodeWasRed) {
+					repaintTreeAfterDelete(x);
+				}
+				replaceNode(nodeToDelete, null);
+				size--;
+				isSimpleCase = true;
+			} else
+			// third case
+			// right child only
+			// only black nodes can have one child, and it always will be red
+			if (nodeToDelete.left == null) {
+				x = nodeToDelete.right;
+				swapValues(nodeToDelete, x);
+				replaceNode(x, null);
+				isSimpleCase = true;
+				size--;
+			} else
+			// third case
+			// left child only
+			// only black nodes can have one child, and it always will be red
+			if (nodeToDelete.right == null) {
+				x = nodeToDelete.left;
+				swapValues(nodeToDelete, x);
+				replaceNode(x, null);
+				isSimpleCase = true;
+				size--;
+			} else
+			// left and right children
+			// converts to one of previous cases
+			{
+				Node successor = treeMinimum(nodeToDelete.right);
+				swapValues(nodeToDelete, successor);
+				nodeToDelete = successor;
+			}
+		}
+
+	}
+
+	private void repaintTreeAfterDelete(Node node) {
+		if (node == root) {
 			return;
 		}
-		System.out.println("PAINTING TREE: " + (node == nil ? "nil" : node.key));
-		printTree();
+//		printTree();
 		// pop additional black color up
-		while (node != root && !node.isRed) {
-			if (node == node.parent.left) {
-				Node parent = node.parent;
-				Node sibling = parent.right;
-				Node newphew = parent.right.right;
-				Node niece = parent.right.left;
-				if (sibling != nil && sibling.isRed) {
-					System.out.println("CASE 1 (SIBLING IS RED) IN LEFT TREE: " + node.key);
-					printTree();
-					sibling.isRed = false;
-					parent.isRed = true;
-					leftRotate(parent);
-					System.out.println("RESULT: ");
-					printTree();
-				} else if (newphew.isRed) {
-					System.out.println("CASE 2 IN LEFT TREE: " + node.key);
-					printTree();
-					sibling.isRed = parent.isRed;
+		if (node == node.parent.left) {
+			leftNodeRepaint(node);
+		} else {
+			rightNodeRepaint(node);
+		}
+		root.isRed = false;
+	}
+
+	private void leftNodeRepaint(Node node) {
+		// System.out.println("leftNodeRepaint");
+		Node parent = node.parent;
+		Node sibling = parent.right;
+		Node leftNewphew = null;
+		Node rightNewphew = null;
+		if (sibling != null) {
+			leftNewphew = sibling.left;
+			rightNewphew = sibling.right;
+		}
+		if (parent.isRed) {
+			if (sibling == null || (sibling != null && isNodeHasTwoBlackChildren(sibling)))
+			// RB1
+			{
+				if (sibling != null)
+					sibling.isRed = true;
+				parent.isRed = false;
+			} else { // RB2
+				if (rightNewphew != null && rightNewphew.isRed) {
+					// System.out.println("RB2.1 left");
 					parent.isRed = false;
-					newphew.isRed = false;
+					rightNewphew.isRed = false;
+					sibling.isRed = true;
 					leftRotate(parent);
-					System.out.println("RESULT: ");
-					printTree();
-					return;
-				} else if (niece != nil && niece.isRed) {
-					niece.isRed = false;
-					sibling.isRed = true;
+				} else if (leftNewphew != null && leftNewphew.isRed) {
+					// System.out.println("RB2.2 left");
+					parent.isRed = false;
 					rightRotate(sibling);
+					leftRotate(parent);
+				}
+			}
+		} else {
+			if (sibling != null && sibling.isRed) {
+				// BR3
+				if (isNodeHasTwoBlackChildren(leftNewphew)) {
+					// System.out.println("BR3 left");
+					sibling.isRed = false;
+					leftNewphew.isRed = true;
+					leftRotate(parent);
 				} else {
-					sibling.isRed = true;
-					node = parent;
+					// BR4
+					if (leftNewphew.right != null && leftNewphew.right.isRed) {
+						// System.out.println("BR4.1 left");
+						leftNewphew.right.isRed = false;
+						rightRotate(sibling);
+						leftRotate(parent);
+					} else if (leftNewphew.left != null && leftNewphew.left.isRed) {
+						// System.out.println("BR4.2 left");
+						leftNewphew.left.isRed = false;
+						rightRotate(leftNewphew);
+						rightRotate(sibling);
+						leftRotate(parent);
+					}
 				}
 			} else {
-				Node parent = node.parent;
-				Node sibling = parent.left;
-				Node newphew = parent.left.left;
-				Node niece = parent.left.left;
-				if (sibling != nil && sibling.isRed) {
-					System.out.println("CASE 1 (SIBLING IS RED) IN left TREE: " + node.key);
-					printTree();
-					sibling.isRed = false;
-					parent.isRed = true;
-					leftRotate(parent);
-					System.out.println("RESULT: ");
-					printTree();
-				} else if (newphew.isRed) {
-					System.out.println("CASE 2 IN left TREE: " + node.key);
-					printTree();
-					sibling.isRed = parent.isRed;
-					parent.isRed = false;
-					newphew.isRed = false;
-					leftRotate(parent);
-					System.out.println("RESULT: ");
-					printTree();
-					return;
-				} else if (niece != nil && niece.isRed) {
-					niece.isRed = false;
+				// BB6
+				if (sibling == null || (sibling != null && isNodeHasTwoBlackChildren(sibling))) {
 					sibling.isRed = true;
-					leftRotate(sibling);
-				} else {
-					sibling.isRed = true;
-					node = parent;
+					repaintTreeAfterDelete(parent);
+				} // BB5
+				else {
+					if (leftNewphew != null && leftNewphew.isRed) {
+						leftNewphew.isRed = false;
+						rightRotate(sibling);
+						leftRotate(parent);
+					} else if (rightNewphew != null && rightNewphew.isRed) {
+						leftRotate(parent);
+						rightNewphew.isRed = false;
+					}
 				}
 			}
 		}
-		node.isRed = false;
 	}
 
-	private boolean isSiblingHasTwoBlackChildren(Node sib) {
-
-		if (sib.left == nil && sib.right == nil)
-			return true;
-		if (sib.left == nil) {
-			if (!sib.right.isRed)
-				return true;
-		} else {
-			if (!sib.left.isRed)
-				return true;
+	private void rightNodeRepaint(Node node) {
+		// System.out.println("rightNodeRepaint");
+		Node parent = node.parent;
+		Node sibling = parent.left;
+		Node rightNewphew = null;
+		Node leftNewphew = null;
+		if (sibling != null) {
+			rightNewphew = sibling.right;
+			leftNewphew = sibling.left;
 		}
-		return false;
+		if (parent.isRed) {
+
+			if (sibling == null || (sibling != null && isNodeHasTwoBlackChildren(sibling)))
+			// RB1 COMPLETED
+			{
+				// System.out.println("RB1 right");
+				if (sibling != null)
+					sibling.isRed = true;
+				parent.isRed = false;
+			} else { // RB2
+				if (leftNewphew != null && leftNewphew.isRed) {
+					// System.out.println("RB2.1 right");
+					parent.isRed = false;
+					leftNewphew.isRed = false;
+					sibling.isRed = true;
+					rightRotate(parent);
+				} else if (rightNewphew != null && rightNewphew.isRed) {
+					// System.out.println("RB2.2 right");
+					parent.isRed = false;
+					leftRotate(sibling);
+					rightRotate(parent);
+				}
+			}
+		} else {
+			if (sibling != null && sibling.isRed) {
+				// BR3
+				if (isNodeHasTwoBlackChildren(rightNewphew)) {
+					sibling.isRed = false;
+					rightNewphew.isRed = true;
+					rightRotate(parent);
+				} else {
+					// BR4
+					if (rightNewphew.left != null && rightNewphew.left.isRed) {
+						// System.out.println("BR4.1 right");
+						rightNewphew.left.isRed = false;
+						leftRotate(sibling);
+						rightRotate(parent);
+					} else if (rightNewphew.right != null && rightNewphew.right.isRed) {
+						// System.out.println("BR4.2 right");
+						rightNewphew.right.isRed = false;
+						leftRotate(rightNewphew);
+						leftRotate(sibling);
+						rightRotate(parent);
+					}
+				}
+			} else {
+				// BB6
+				if (sibling == null || (sibling != null && isNodeHasTwoBlackChildren(sibling))) {
+					sibling.isRed = true;
+					repaintTreeAfterDelete(parent);
+				} // BB5
+				else {
+					if (rightNewphew != null && rightNewphew.isRed) {
+						rightNewphew.isRed = false;
+						leftRotate(sibling);
+						rightRotate(parent);
+					} else if (leftNewphew != null && leftNewphew.isRed) {
+						rightRotate(parent);
+						leftNewphew.isRed = false;
+					}
+				}
+			}
+		}
 	}
-//	private void repaintTreeAterDelete(Node node) {
-//		System.out.println("PAINTING TREE: " + node.key);
-//		printTree();
-//		// pop additional black color up
-//		while (node != root && !node.isRed) {
-//			if (node == node.parent.left) {
-//				Node sibling = node.parent.right;
-//				if (sibling != nil && sibling.isRed) {
-//					System.out.println("CASE 1 (SIBLING IS RED) IN LEFT TREE: " + node.key);
-//					printTree();
-//					sibling.isRed = false;
-//					node.parent.isRed = true;
-//					leftRotate(node.parent);
-//					sibling = node.parent.right;
-//					System.out.println("RESULT: ");
-//					printTree();
-//				}
-//				if (sibling.left != nil && sibling.right != nil && !sibling.left.isRed && !sibling.right.isRed) {
-//					System.out.println("CASE 2 IN LEFT TREE: " + node.key);
-//					printTree();
-//					sibling.isRed = true;
-//					node = node.parent;
-//					System.out.println("RESULT: ");
-//					printTree();
-//				} else {
-//					if (!sibling.right.isRed) {
-//						System.out.println("CASE 3 IN LEFT TREE: " + node.key);
-//						printTree();
-//						sibling.left.isRed = false;
-//						sibling.isRed = true;
-//						rightRotate(sibling);
-//						sibling = node.parent.right;
-//						System.out.println("RESULT: ");
-//						printTree();
-//					}
-//					System.out.println("CASE 4 IN LEFT TREE: " + node.key);
-//					printTree();
-//					sibling.isRed = node.parent.isRed;
-//					node.parent.isRed = false;
-//					sibling.right.isRed = false;
-//					node = root;
-//					System.out.println("RESULT: ");
-//					printTree();
-//				}
-//			} else {
-//				Node sibling = node.parent.left;
-//				if (sibling != nil && sibling.isRed) {
-//					System.out.println("CASE 1 (SIBLING IS RED) IN RIGHT TREE: " + node.key);
-//					printTree();
-//					sibling.isRed = false;
-//					node.parent.isRed = true;
-//					rightRotate(node.parent);
-//					sibling = node.parent.left;
-//					System.out.println("RESULT: ");
-//					printTree();
-//				}
-//				if ((sibling.left == nil && sibling.right == nil) | !sibling.right.isRed && !sibling.left.isRed) {
-//					System.out.println("CASE 2 IN RIGHT TREE: " + node.key);
-//					printTree();
-//					sibling.isRed = true;
-//					node = node.parent;
-//					System.out.println("RESULT: ");
-//					printTree();
-//				} else {
-//					if (!sibling.left.isRed) {
-//						System.out.println("CASE 3 IN RIGHT TREE: " + node.key);
-//						printTree();
-//						sibling.right.isRed = false;
-//						sibling.isRed = true;
-//						leftRotate(sibling);
-//						sibling = node.parent.left;
-//						System.out.println("RESULT: ");
-//						printTree();
-//					}
-//					System.out.println("CASE 4 IN RIGHT TREE: " + node.key);
-//					printTree();
-//					sibling.isRed = node.parent.isRed;
-//					node.parent.isRed = false;
-//					sibling.left.isRed = false;
-//					node = root;
-//					System.out.println("RESULT: ");
-//					printTree();
-//				}
-//			}
-//		}
-//		node.isRed = false;
-//	}
 
 	public int size() {
 		return size;
 	}
 
 	private void replaceNode(Node replaceableNode, Node replacementNode) {
-		if (replaceableNode.parent == nil) {
+		if (replaceableNode.parent == null) {
 			root = replacementNode;
 		} else {
-			if (replaceableNode.parent.left == replaceableNode) {
-				replaceableNode.parent.left = replacementNode;
+			Node parentOfReplaceableNode = replaceableNode.parent;
+			if (parentOfReplaceableNode.left == replaceableNode) {
+				parentOfReplaceableNode.left = replacementNode;
 			} else {
-				replaceableNode.parent.right = replacementNode;
+				parentOfReplaceableNode.right = replacementNode;
 			}
 		}
-		if (replacementNode != nil)
+		if (replacementNode != null)
 			replacementNode.parent = replaceableNode.parent;
 	}
 
+	private void swapValues(Node first, Node second) {
+		// System.out.println("SWAPPING " + first.key + " and " + second.key);
+		T temp = first.key;
+		first.key = second.key;
+		second.key = temp;
+	}
+
 	private Node treeSuccessor(Node node) {
-		if (node.right != nil)
+		if (node.right != null)
 			return treeMinimum(node.right);
 		Node nodeParent = node.parent;
-		while (nodeParent != nil && node == nodeParent.right) {
+		while (nodeParent != null && node == nodeParent.right) {
 			node = nodeParent;
 			nodeParent = nodeParent.parent;
 		}
@@ -387,10 +407,10 @@ public class BlackRedTree<T extends Comparable<T>> {
 
 	public T treeValueSuccessor(T value) {
 		Node node = search(value);
-		if (node.right != nil)
+		if (node.right != null)
 			return treeMinimum(node.right).key;
 		Node nodeParent = node.parent;
-		while (nodeParent.parent != nil && node == nodeParent.right) {
+		while (nodeParent.parent != null && node == nodeParent.right) {
 			node = nodeParent;
 			nodeParent = nodeParent.parent;
 		}
@@ -398,10 +418,10 @@ public class BlackRedTree<T extends Comparable<T>> {
 	}
 
 	private Node treePredcessor(Node node) {
-		if (node.left != nil)
+		if (node.left != null)
 			return treeMaximum(node.left);
 		Node nodeParent = node.parent;
-		while (nodeParent != nil && node == nodeParent.left) {
+		while (nodeParent != null && node == nodeParent.left) {
 			node = nodeParent;
 			nodeParent = nodeParent.parent;
 		}
@@ -410,10 +430,10 @@ public class BlackRedTree<T extends Comparable<T>> {
 
 	public T treeValuePredcessor(T value) {
 		Node node = search(value);
-		if (node.left != nil)
+		if (node.left != null)
 			return treeMaximum(node.left).key;
 		Node nodeParent = node.parent;
-		while (nodeParent.parent != nil && node == nodeParent.left) {
+		while (nodeParent.parent != null && node == nodeParent.left) {
 			node = nodeParent;
 			nodeParent = nodeParent.parent;
 		}
@@ -421,15 +441,15 @@ public class BlackRedTree<T extends Comparable<T>> {
 	}
 
 	private void insertNode(Node nodeToInsert) {
-		if (root == nil) {
+		if (root == null) {
 			root = nodeToInsert;
 			size++;
 			return;
 		}
-		Node previous = nil;
+		Node previous = null;
 		T key = nodeToInsert.key;
 		Node insertionPlace = root;
-		while (insertionPlace != nil) {
+		while (insertionPlace != null) {
 			previous = insertionPlace;
 			if (key.equals(insertionPlace.key))
 				return;
@@ -440,7 +460,7 @@ public class BlackRedTree<T extends Comparable<T>> {
 		}
 		insertionPlace = nodeToInsert;
 		nodeToInsert.parent = previous;
-		if (previous == nil)
+		if (previous == null)
 			root = nodeToInsert;
 		if (previous.key.compareTo(nodeToInsert.key) < 0)
 			previous.right = nodeToInsert;
@@ -453,59 +473,39 @@ public class BlackRedTree<T extends Comparable<T>> {
 
 	// in every case node is a leaf
 	private void repaintTreeAfterModify(Node node) {
-		// System.out.println("TREE STATE BEFORE MANIPULATIONS: ");
-		// printTree();
-		while (node.parent != nil && node.parent.isRed) {
+		while (node.parent != null && node.parent.isRed) {
 			if (node.parent.parent.left == node.parent) {
 				Node uncle = node.parent.parent.right;
-				if (uncle != nil && uncle.isRed) {
-					// System.out.println("FIRST CASE IN LEFT BRANCH:" + node.key);
-					// printTree();
+				if (uncle != null && uncle.isRed) {
 					node.parent.isRed = false;
 					uncle.isRed = false;
 					node = node.parent.parent;
 					node.isRed = true;
-
 				} else {
-					if (node.parent != nil && node.parent.right == node) {
-
+					if (node.parent != null && node.parent.right == node) {
 						// node is closer to middle of tree
-						// System.out.println("SECOND CASE IN LEFT BRANCH:" + node.key);
-						// printTree();
 						node = node.parent;
 						leftRotate(node);
-
 					}
 					// node is closer to outer edge of tree
-					// System.out.println("THIRD CASE IN LEFT BRANCH:" + node.key);
-					// printTree();
 					node.parent.isRed = false;
 					node.parent.parent.isRed = true;
-
 					rightRotate(node.parent.parent);
-
 				}
 			} else {
 				Node uncle = node.parent.parent.left;
-				if (uncle != nil && uncle.isRed) {
-					// System.out.println("FIRST CASE IN RIGHT BRANCH: " + node.key);
-					// printTree();
+				if (uncle != null && uncle.isRed) {
 					node.parent.isRed = false;
 					uncle.isRed = false;
 					node = node.parent.parent;
 					node.isRed = true;
-
 				} else {
 					if (node.parent.left == node) {
 						// node is closer to middle of tree
-						// System.out.println("SECOND CASE IN RIGHT BRANCH: " + node.key);
-						// printTree();
 						node = node.parent;
 						rightRotate(node);
 					}
 					// node is closer to outer edge of tree
-					// System.out.println("THIRD CASE IN RIGHT BRANCH: " + node.key);
-					// printTree();
 					node.parent.isRed = false;
 					node.parent.parent.isRed = true;
 					leftRotate(node.parent.parent);
@@ -515,17 +515,14 @@ public class BlackRedTree<T extends Comparable<T>> {
 		root.isRed = false;
 	}
 
-	// put node below
 	private void leftRotate(Node node) {
-//		System.out.println("LEFT ROTATE: " + node.key);
 		Node nodeThatGoesUp = node.right;
 		node.right = nodeThatGoesUp.left;
 
-		if (nodeThatGoesUp.left != nil)
+		if (nodeThatGoesUp.left != null)
 			nodeThatGoesUp.left.parent = node;
 		nodeThatGoesUp.parent = node.parent;
-
-		if (node.parent == nil) {
+		if (node.parent == null) {
 			root = nodeThatGoesUp;
 		} else {
 			if (node == node.parent.right) {
@@ -534,23 +531,18 @@ public class BlackRedTree<T extends Comparable<T>> {
 				node.parent.left = nodeThatGoesUp;
 			}
 		}
-
 		nodeThatGoesUp.left = node;
 		node.parent = nodeThatGoesUp;
-//		printTree();
-
 	}
 
-	// put node below
 	private void rightRotate(Node node) {
-//		System.out.println("RIGHT ROTATION: " + node.key);
 		Node nodeThatGoesUp = node.left;
 		node.left = nodeThatGoesUp.right;
 
-		if (nodeThatGoesUp.right != nil)
+		if (nodeThatGoesUp.right != null)
 			nodeThatGoesUp.right.parent = node;
 		nodeThatGoesUp.parent = node.parent;
-		if (node.parent == nil) {
+		if (node.parent == null) {
 			root = nodeThatGoesUp;
 		} else {
 			if (node.parent.left == node) {
@@ -562,7 +554,6 @@ public class BlackRedTree<T extends Comparable<T>> {
 
 		nodeThatGoesUp.right = node;
 		node.parent = nodeThatGoesUp;
-//		printTree();
 	}
 
 	public void printTree() {
@@ -573,13 +564,13 @@ public class BlackRedTree<T extends Comparable<T>> {
 
 	public void printTreeUtil(Node node, int currDepth) {
 
-		if (node == nil)
+		if (node == null)
 			return;
 		printTreeUtil(node.right, currDepth + 1);
 		for (int i = 0; i < currDepth; i++) {
 			System.out.print("     ");
 		}
-		if (node.parent != nil) {
+		if (node.parent != null) {
 			if (node.parent.left == node) {
 				System.out.print(ANSI_YELLOW + "\\" + ANSI_RESET);
 			} else {
@@ -591,17 +582,13 @@ public class BlackRedTree<T extends Comparable<T>> {
 		else
 			System.out.print(node.key);
 		System.out.print("(");
-		if (node.parent != nil)
+		if (node.parent != null)
 			if (node.parent.isRed)
 				System.out.print(ANSI_RED + node.parent.key + ANSI_RESET);
 			else
 				System.out.print(node.parent.key);
 		else
 			System.out.print("root");
-//		if (node.left != nil)
-//			System.out.print(", left: " + node.left.key);
-//		if (node.right != nil)
-//			System.out.print(", right: " + node.right.key);
 		System.out.println(")");
 		printTreeUtil(node.left, currDepth + 1);
 	}
@@ -616,10 +603,6 @@ public class BlackRedTree<T extends Comparable<T>> {
 
 		public Node(T key) {
 			this.key = key;
-		}
-
-		public Node() {
-			super();
 		}
 
 	}
