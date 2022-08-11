@@ -563,7 +563,6 @@ public class BlackRedTree<T extends Comparable<T>> {
 	}
 
 	public void printTreeUtil(Node node, int currDepth) {
-
 		if (node == null)
 			return;
 		printTreeUtil(node.right, currDepth + 1);
