@@ -7,7 +7,7 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.ListIterator;
 
-public class ArrLst<E> extends AbstractSequentialList<E> implements Deque<E> {
+public class ArrList<E> extends AbstractSequentialList<E> implements Deque<E> {
 
 	private final static int INITIAL_CAPACITY = 10;
 
@@ -19,13 +19,13 @@ public class ArrLst<E> extends AbstractSequentialList<E> implements Deque<E> {
 	private E[] data;
 
 	@SuppressWarnings("unchecked")
-	public ArrLst(int capacity) {
+	public ArrList(int capacity) {
 		data = (E[]) new Object[capacity];
 		size = 0;
 	}
 
 	@SuppressWarnings("unchecked")
-	public ArrLst() {
+	public ArrList() {
 		data = (E[]) new Object[INITIAL_CAPACITY];
 		size = 0;
 	}

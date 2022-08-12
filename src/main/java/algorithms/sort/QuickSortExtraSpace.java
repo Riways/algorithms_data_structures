@@ -3,7 +3,7 @@ package algorithms.sort;
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class QckSrtExtrSpc {
+public class QuickSortExtraSpace {
 	
 
 	public static ArrayList<Integer> sort(ArrayList<Integer> arrToSort) {

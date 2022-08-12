@@ -9,19 +9,19 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import org.junit.jupiter.api.Test;
 
-import data_structures.ArrLst;
+import data_structures.ArrList;
 
 class ArrLstTest {
 
-	ArrLst<Integer> list = new ArrLst<>();
+	ArrList<Integer> list = new ArrList<>();
 	ArrayList<Integer> arrList = new ArrayList<>();
 
 	private void initEmptyList() {
-		list = new ArrLst<>();
+		list = new ArrList<>();
 	}
 
 	private void initListBeforeExpansion() {
-		list = new ArrLst<>();
+		list = new ArrList<>();
 		list.add(ThreadLocalRandom.current().nextInt(10));
 		list.add(ThreadLocalRandom.current().nextInt(10));
 		list.add(ThreadLocalRandom.current().nextInt(10));
@@ -37,7 +37,7 @@ class ArrLstTest {
 	
 
 	public void initListBeforeOverflow() {
-		list = new ArrLst<>();
+		list = new ArrList<>();
 		long start = System.currentTimeMillis();
 		int expansion = 10;
 		for (int i = 0; i < Integer.MAX_VALUE - 8; i++) {

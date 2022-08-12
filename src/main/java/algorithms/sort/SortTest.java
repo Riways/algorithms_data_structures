@@ -4,33 +4,42 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class SrtTst {
+public class SortTest {
+	
+	
 
 	public static void main(String[] args) {
+		HeapSort<Integer> heapSort = new HeapSort<>();
 		ArrayList<Integer> arrayToSort = new ArrayList<Integer>();
-		int bitShift = 1 << 23;
+		int bitShift = 1 << 22;
+		Integer[] arrForHeapSort = new Integer[bitShift];
 
 		long quickSortTime;
 		long mergeSortTime;
 		long javaDefaultSortTime;
+		long heapSortTime;
 
 		for (int i = 0; i < bitShift; ++i) {
-			arrayToSort.add(ThreadLocalRandom.current().nextInt());
+			int curr = ThreadLocalRandom.current().nextInt();
+			arrayToSort.add(curr);
+			arrForHeapSort[i] = curr;
 		}
 
 		long start = System.currentTimeMillis();
-		ArrayList<Integer> quickSortResult = QckSrtExtrSpc.sort(arrayToSort);
+		ArrayList<Integer> quickSortResult = QuickSortExtraSpace.sort(arrayToSort);
 		long end = System.currentTimeMillis();
 		quickSortTime = (end - start) / 1000;
 
 		start = System.currentTimeMillis();
-		ArrayList<Integer> mergeSortResult = (ArrayList<Integer>) MrgSrt.sort(arrayToSort);
+		ArrayList<Integer> mergeSortResult = (ArrayList<Integer>) MergeSort.sort(arrayToSort);
 		end = System.currentTimeMillis();
 		mergeSortTime = (long) (end - start) / 1000;
+		
+		start = System.currentTimeMillis();
+		heapSort.heapSort(arrForHeapSort);
+		end = System.currentTimeMillis();
+		heapSortTime = (end - start) / 1000;
 
-		System.out.println("YO");
-		System.out.println(mergeSortResult.size());
-		System.out.println(quickSortResult.size());
 
 		start = System.currentTimeMillis();
 		Collections.sort(arrayToSort);
@@ -57,6 +66,7 @@ public class SrtTst {
 
 		System.out.println("QuickSort time: " + quickSortTime);
 		System.out.println("MergeSort time: " + mergeSortTime);
+		System.out.println("HeapSort time: " + heapSortTime);
 		System.out.println("Java Collections.sort time: " + javaDefaultSortTime);
 
 	}
